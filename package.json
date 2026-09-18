@@ -1,0 +1,17 @@
+{
+  "name": "haust-timetable",
+  "version": "1.0.0",
+  "private": true,
+  "description": "河南科技大学研究生课表网站 + 企业微信每日推送",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "push": "node push.js send",
+    "push:test": "node push.js test",
+    "push:preview": "node push.js preview"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

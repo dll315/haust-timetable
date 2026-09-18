@@ -1,0 +1,6 @@
+{
+  "webhook": "",
+  "enabled": false,
+  "time": "07:30",
+  "sendIfEmpty": true
+}

@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log*
+.git
+.gitignore
+.github
+Dockerfile
+.dockerignore
+DEPLOY.md
+push-config.json
+push-state.json
+push-config.example.json

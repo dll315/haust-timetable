@@ -1,0 +1,40 @@
+name: 每日课表推送
+
+on:
+  schedule:
+    # GitHub Actions 的 cron 使用 UTC。北京时间 07:30 = 前一天 UTC 23:30
+    - cron: "30 23 * * *"
+  # 允许在 Actions 页面手动点一次，用于验证配置
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "指定日期 YYYY-MM-DD，留空表示今天"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # 不设 TZ 的话，UTC 23:30 会被算成"昨天"，推错一天的课表
+      TZ: Asia/Shanghai
+      WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+      # 仓库里没有 push-config.json，默认 enabled=false 会跳过，必须显式打开
+      PUSH_ENABLED: "1"
+      PUSH_SEND_EMPTY: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 先看一眼要发什么（不发送，日志里可核对）
+        run: node push.js preview ${{ github.event.inputs.date && format('--date={0}', github.event.inputs.date) || '' }}
+
+      - name: 推送到企业微信群
+        run: node push.js send ${{ github.event.inputs.date && format('--date={0}', github.event.inputs.date) || '' }}

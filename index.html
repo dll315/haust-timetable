@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的课表 · 河南科技大学研究生</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5fe0'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-family='sans-serif'%3E%E7%A7%91%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="bg-deco" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">科</div>
+      <div>
+        <h1>研究生课表</h1>
+        <p class="brand-sub">河南科技大学 · <span id="semTitle"></span></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="clock">
+        <strong id="clockTime">--:--:--</strong>
+        <span id="clockDate">--</span>
+      </div>
+      <button id="pushPill" class="push-pill" type="button" title="推送设置">
+        <i class="pdot"></i><span id="pushPillText">推送未启用</span>
+      </button>
+      <button id="settingsBtn" class="icon-btn" title="推送设置" type="button">⚙</button>
+      <button id="themeBtn" class="icon-btn" title="切换主题" type="button">◐</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="status-strip">
+    <div class="student-card">
+      <div class="avatar" id="avatar"></div>
+      <div class="student-meta">
+        <div class="student-name" id="stuName"></div>
+        <div class="student-sub" id="stuDept"></div>
+      </div>
+    </div>
+
+    <div class="week-card">
+      <div class="week-left">
+        <span class="tag">当前周次</span>
+        <div class="week-big">第 <b id="nowWeek">-</b> 周</div>
+        <div class="week-range" id="nowRange"></div>
+      </div>
+      <div class="week-bar">
+        <div class="week-bar-track"><div class="week-bar-fill" id="termProgress"></div></div>
+        <div class="week-bar-label" id="termProgressLabel"></div>
+      </div>
+    </div>
+
+    <div class="next-card" id="nextCard">
+      <span class="tag">下一节课</span>
+      <div class="next-title" id="nextTitle">今天没有课了</div>
+      <div class="next-sub" id="nextSub"></div>
+      <div class="next-bar"><div class="next-bar-fill" id="nextFill"></div></div>
+    </div>
+  </section>
+
+  <nav class="toolbar">
+    <div class="week-picker">
+      <button class="icon-btn" id="prevWeek" type="button" title="上一周">‹</button>
+      <div class="week-pills" id="weekPills"></div>
+      <button class="icon-btn" id="nextWeek" type="button" title="下一周">›</button>
+      <button class="ghost-btn" id="thisWeekBtn" type="button">回到本周</button>
+    </div>
+    <div class="view-switch">
+      <div class="seg" role="tablist">
+        <button class="seg-btn is-active" data-view="grid" type="button">周视图</button>
+        <button class="seg-btn" data-view="list" type="button">列表</button>
+      </div>
+    </div>
+  </nav>
+
+  <section class="view" id="viewGrid">
+    <div class="grid-scroll">
+      <div class="timetable" id="timetable"></div>
+    </div>
+    <p class="legend">
+      <span class="legend-item"><i class="dot dot-now"></i>当前时间</span>
+      <span class="legend-item"><i class="dot dot-today"></i>今天</span>
+      <span class="legend-item">节次时间依据河南科技大学教务处公布的作息时间表自动切换（5月1日 / 10月1日）</span>
+    </p>
+  </section>
+
+  <section class="view hidden" id="viewList">
+    <div class="day-tabs" id="dayTabs"></div>
+    <div class="day-list" id="dayList"></div>
+  </section>
+
+  <section class="stats">
+    <h2 class="section-title">课程概览</h2>
+    <div class="course-grid" id="courseGrid"></div>
+  </section>
+
+  <footer class="foot">
+    <p id="footNote"></p>
+  </footer>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-mask" data-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close type="button" aria-label="关闭">×</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal" hidden>
+  <div class="modal-mask" data-close-settings></div>
+  <div class="modal-panel settings-panel" role="dialog" aria-modal="true" aria-label="推送设置">
+    <button class="modal-close" data-close-settings type="button" aria-label="关闭">×</button>
+    <div class="m-head"><h2>推送设置</h2><span class="conn" id="connState">检测中…</span></div>
+    <p class="m-en">每天定时把当天课表推送到企业微信群机器人</p>
+    <div class="m-bar"></div>
+
+    <div class="field">
+      <label for="cfWebhook">企业微信机器人 Webhook</label>
+      <div class="field-row">
+        <input id="cfWebhook" type="password" autocomplete="off" spellcheck="false"
+               placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx">
+        <button class="ghost-btn sm" id="btnReveal" type="button">显示</button>
+        <button class="ghost-btn sm danger" id="cfClear" type="button" hidden>清除</button>
+      </div>
+      <p class="hint">群设置 → 群机器人 → 添加机器人 → 复制 Webhook 地址。出于安全考虑已保存的地址不会回显，留空即保持不变。</p>
+    </div>
+
+    <div class="field-grid">
+      <label class="switch">
+        <input id="cfEnabled" type="checkbox">
+        <span><b>启用每日推送</b><i>关闭后只保存配置，不会发送</i></span>
+      </label>
+      <label class="switch">
+        <input id="cfEmpty" type="checkbox" checked>
+        <span><b>无课也提醒</b><i>休息日也推送「今天没有课」</i></span>
+      </label>
+      <div class="field inline">
+        <label for="cfTime">推送时间</label>
+        <input id="cfTime" type="time" value="07:30" step="60">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn primary" id="btnSave" type="button">保存设置</button>
+      <button class="btn" id="btnTest" type="button">发送测试消息</button>
+      <button class="btn" id="btnSend" type="button">立即推送今日</button>
+      <button class="btn" id="btnPreview" type="button">刷新预览</button>
+    </div>
+
+    <p class="status" id="pushStatus">等待操作</p>
+
+    <div class="m-sec">
+      <h4>今日推送预览</h4>
+      <pre class="preview" id="pushPreview">加载中…</pre>
+    </div>
+
+    <div class="m-sec">
+      <h4>定时执行方式</h4>
+      <p class="m-text">
+        网站本身无法在后台唤醒，推送由 Node 触发，二选一：<br>
+        <b>方式 A</b>　保持 <code>node server.js</code> 运行，到点自动推送（推荐先用这个）<br>
+        <b>方式 B</b>　用 Windows 任务计划程序每天 07:30 执行
+        <code>schtasks /create /tn "课表推送" /tr "node G:\QoderCNworks\haust-schedule\push.js send" /sc daily /st 07:30</code>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="schedule-core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

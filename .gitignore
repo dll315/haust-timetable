@@ -1,0 +1,11 @@
+# 含企业微信 webhook 密钥，绝不入库
+push-config.json
+push-state.json
+
+# 本地依赖与系统文件
+node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
