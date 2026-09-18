@@ -11,11 +11,15 @@ const flag = (name) => args.find((a) => a.startsWith(`--${name}=`))?.split("=").
 const has = (name) => args.includes(`--${name}`);
 
 function resolveDate() {
-  const raw = flag("date");
+  const raw = flag("date") || process.env.PUSH_DATE;
   if (!raw) return new Date();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    console.error(`日期格式错误：${raw}，应为 YYYY-MM-DD`);
+    process.exit(1);
+  }
   const d = new Date(raw + "T00:00:00");
   if (isNaN(d)) {
-    console.error(`--date 格式错误：${raw}，应为 YYYY-MM-DD`);
+    console.error(`日期无效：${raw}`);
     process.exit(1);
   }
   return d;
