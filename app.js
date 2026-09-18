@@ -142,6 +142,8 @@
       const col = el("div", "daycol" + (i + 1 === todayIdx ? " is-today" : ""));
       col.style.gridColumn = 3 + i;
       col.style.gridRow = `2 / span 12`;
+      // 左侧时间轴整周共用（只能显示一套），块内标签按当天作息取，跨 10/1 的那一周才不会错
+      const dayBell = bellFor(dateOf(viewWeek, i + 1));
 
       sessionsOn(viewWeek, i + 1).forEach((s) => {
         const c = courses.get(s.courseId);
@@ -151,7 +153,7 @@
         blk.style.height = `calc(${s.end - s.start + 1} * var(--row-h) - 6px)`;
         blk.innerHTML =
           `<div class="blk-name">${c.name}</div>` +
-          `<div class="blk-time">${slotLabel(bell, s.start, s.end)} · ${secLabel(s.start, s.end)}</div>` +
+          `<div class="blk-time">${slotLabel(dayBell, s.start, s.end)} · ${secLabel(s.start, s.end)}</div>` +
           `<div class="blk-room" title="${s.room}">${s.room}</div>`;
         blk.onclick = () => openModal(s.courseId);
         col.appendChild(blk);
@@ -203,7 +205,8 @@
 
     const box = $("#dayList");
     box.innerHTML = "";
-    const bell = bellFor(dateOf(viewWeek, 1));
+    // 按当天而不是周一取作息：第 5 周跨 10/1 的作息切换，用周一会算错后几天
+    const bell = bellFor(dateOf(viewWeek, listDay));
     const list = sessionsOn(viewWeek, listDay);
     if (!list.length) {
       box.appendChild(el("div", "empty", `第 ${viewWeek} 周 ${DAY_NAMES[listDay - 1]} 没有课，好好享受～`));
@@ -252,7 +255,6 @@
   function openModal(id) {
     const c = courses.get(id);
     const mine = sessions.filter((s) => s.courseId === id);
-    const bell = bellFor(dateOf(viewWeek, 1));
     $("#modalBody").innerHTML =
       `<div class="m-head"><h2>${c.name}</h2><span class="chip">${c.nature}</span></div>` +
       `<p class="m-en">${c.en}</p><div class="m-bar"></div>` +
@@ -266,9 +268,11 @@
         <div class="m-cell"><i>主讲教师</i><b>${c.professor}</b></div>
         <div class="m-cell"><i>任课教师</i><b>${[...new Set(mine.map((s) => s.teacher))].join("、")}</b></div>
       </div>
-      <div class="m-sec"><h4>上课时间地点</h4>${mine.map((s) =>
-        `<div class="m-slot"><b>${DAY_NAMES[s.day - 1]} ${secLabel(s.start, s.end)}</b>` +
-        `<span>${slotLabel(bell, s.start, s.end)} · ${s.room} · ${s.teacher} · 第 ${s.weeks} 周</span></div>`).join("")}</div>
+      <div class="m-sec"><h4>上课时间地点</h4>${mine.map((s) => {
+        const bell = bellFor(dateOf(viewWeek, s.day));
+        return `<div class="m-slot"><b>${DAY_NAMES[s.day - 1]} ${secLabel(s.start, s.end)}</b>` +
+          `<span>${slotLabel(bell, s.start, s.end)} · ${s.room} · ${s.teacher} · 第 ${s.weeks} 周</span></div>`;
+      }).join("")}</div>
       <div class="m-sec"><h4>课程简介</h4><p class="m-text">${c.intro}</p></div>`;
     const m = $("#modal");
     m.querySelector(".modal-panel").style.setProperty("--c", c.color);
